@@ -1,0 +1,29 @@
+server:
+  port: 8080
+spring:
+  redis:
+    host: localhost  # Адрес вашего Redis сервера (по умолчанию localhost)
+    port: 6379       # Порт Redis (по умолчанию 6379)
+    #password: your_redis_password  # Пароль Redis (если установлен)
+    timeout: 60000
+  flyway:
+    locations: classpath:/db/migration
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${POSTGRES_DB_URL}
+    username: ${POSTGRES_DB_USERNAME}
+    password: ${POSTGRES_DB_PASSWORD}
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+
+app:
+  constants:
+    bot:
+      bot-name: BBSGAY_Bbot
+      bot-token: 6396446829:AAGj_ciyqp6gvL-c83hb51moFSAwRAgP-w0
+      web-url: https://a229-62-73-123-196.ngrok-free.app
