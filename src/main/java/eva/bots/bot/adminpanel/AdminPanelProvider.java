@@ -3,20 +3,16 @@ package eva.bots.bot.adminpanel;
 import eva.bots.exception.TelegramRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.jpa.event.spi.CallbackRegistryConsumer;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -25,99 +21,80 @@ import java.util.List;
 public class AdminPanelProvider {
 
     private final Long adminChatId = 225773842L; // FIXME
-    private final String URGENT_REQUEST = "urgent_request";
-    private final String REGULAR_REQUESTS = "regular_requests";
-    private final String REQUESTS_IN_PROCESS = "requests_in_process";
+    private final String URGENT_REQUEST = "adm_urgent_request";
+    private final String REGULAR_REQUESTS = "adm_regular_requests";
+    private final String REQUESTS_IN_PROCESS = "adm_requests_in_process";
+    private final String ACCEPT = "adm_accept_";
+    private final String REJECT = "adm_reject_";
+    private final String START = "adm_start_";
+    private final String ARCHIVE = "adm_archive_";
+    private final String TEXTMESSAGE = "adm_textMessage_";
+    private final String BACK = "amd_back_";
+    private final ApplicationEventPublisher eventPublisher;
+    private final AdminButtonsHandler adminButtonsHandler;
 
-    public SendMessage provideAdminPanel(Update update) {
+
+    public List<SendMessage> provideAdminPanel(Update update) {
 
         authoriseUserAndProvideAdminPanel(update);
 
         return authoriseUserAndProvideAdminPanel(update);
     }
 
-    private SendMessage authoriseUserAndProvideAdminPanel(Update update) {
+    private List<SendMessage> authoriseUserAndProvideAdminPanel(Update update) {
 
-        Message message = update.getMessage();
-
-        if (message.getChatId().equals(adminChatId)) {
-            return SendMessage.builder()
-                    .chatId(message.getChatId())
-                    .text("У вас нет доступа к использованию данной команды!")
-                    .build();
+        if (update.hasCallbackQuery()) {
+            return handleButtons(update);
         }
 
         if (!update.hasCallbackQuery()) {
-            return provideAdminPanelButtons(message);
-        } else {
-            return handleButtons(update);
+            return adminButtonsHandler.provideAdminPanelButtons(update);
         }
+
+        throw new TelegramRuntimeException("Can't handle admin panel");
     }
 
-    private SendMessage handleButtons(Update update) {
+    private List<SendMessage> handleButtons(Update update) {
 
-        Message message = update.getMessage();
+        String data = update.getCallbackQuery().getData();
+        Long chatId = update.getCallbackQuery().getFrom().getId();
 
-        if (update.getCallbackQuery().getData().equals(URGENT_REQUEST)) {
-            return provideUrgentRequests(message);
+        if (data.equals(URGENT_REQUEST)) {
+
+            return adminButtonsHandler.provideRequests(chatId, true);
         }
 
-        if (update.getCallbackQuery().getData().equals(REGULAR_REQUESTS)) {
-            return provideRegularRequests(message);
+        if (data.equals(REGULAR_REQUESTS)) {
+            return adminButtonsHandler.provideRequests(chatId, false);
         }
 
-        if (update.getCallbackQuery().getData().equals(REQUESTS_IN_PROCESS)) {
-            return provideRequestsInProcess(message);
+        if (data.equals(REQUESTS_IN_PROCESS)) {
+            return adminButtonsHandler.provideRequestsInProcess(chatId);
+        }
+
+        if (data.startsWith(ACCEPT)) {
+            Long requestId = Long.parseLong(data.substring(ACCEPT.length()));
+            return adminButtonsHandler.handleAcceptRequest(chatId, requestId);
+        } else if (data.startsWith(REJECT)) {
+            Long requestId = Long.parseLong(data.substring(REJECT.length()));
+            return adminButtonsHandler.handleRejectRequest(chatId, requestId);
+        }
+
+        if (data.startsWith(START)) {
+            Long requestId = Long.parseLong(data.substring(START.length()));
+            return adminButtonsHandler.handleStartRequest(chatId, requestId);
+        } else if (data.startsWith(ARCHIVE)) {
+            Long requestId = Long.parseLong(data.substring(ARCHIVE.length()));
+            return adminButtonsHandler.handleRejectRequest(chatId, requestId);
+        }
+
+        if (data.startsWith(TEXTMESSAGE)) {
+            Long requestId = Long.parseLong(data.substring(TEXTMESSAGE.length()));
+            return adminButtonsHandler.handleSendMessage(chatId, requestId);
+        } else if (data.startsWith(BACK)) {
+            return adminButtonsHandler.provideRequestsInProcess(chatId);
         }
 
         throw new TelegramRuntimeException("Bad CallBackQuery, can't handle buttons");
-    }
-
-    private SendMessage provideUrgentRequests(Message message) {
-        return null; // TODO: add logic of creating list of requests
-    }
-
-    private SendMessage provideRegularRequests(Message message) {
-        return null; // TODO: add logic of creating list of requests
-    }
-
-    private SendMessage provideRequestsInProcess(Message message) {
-        return null; // TODO: add logic of creating list of requests
-    }
-
-    private SendMessage provideAdminPanelButtons(Message message) {
-
-        SendMessage sendMessage = new SendMessage();
-
-        sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("Добро пожаловать в админ панель");
-
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> inlineKeyboardRows = new ArrayList<>();
-
-        // Urgent requests button
-        List<InlineKeyboardButton> reportSaleRow = new ArrayList<>();
-        InlineKeyboardButton saleBtn = new InlineKeyboardButton();
-        saleBtn.setCallbackData(URGENT_REQUEST);
-        reportSaleRow.add(saleBtn);
-        inlineKeyboardRows.add(reportSaleRow);
-
-        // Regular requests button
-        List<InlineKeyboardButton> reportBuyRow = new ArrayList<>();
-        InlineKeyboardButton buyBtn = new InlineKeyboardButton("Отчет по покупкам");
-        buyBtn.setCallbackData(REGULAR_REQUESTS);
-        reportBuyRow.add(buyBtn);
-        inlineKeyboardRows.add(reportBuyRow);
-
-        // Requests in process button
-        List<InlineKeyboardButton> setPriceRow = new ArrayList<>();
-        InlineKeyboardButton priceBtn = new InlineKeyboardButton("Установить новую цену");
-        priceBtn.setCallbackData(REQUESTS_IN_PROCESS);
-        setPriceRow.add(priceBtn);
-        inlineKeyboardRows.add(setPriceRow);
-
-        inlineKeyboardMarkup.setKeyboard(inlineKeyboardRows);
-        sendMessage.setReplyMarkup(inlineKeyboardMarkup);
-        return sendMessage;
     }
 }

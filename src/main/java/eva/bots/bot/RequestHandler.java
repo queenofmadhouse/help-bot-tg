@@ -24,7 +24,7 @@ public class RequestHandler {
     private String url;
     private final Jedis jedis;
 
-    public SendMessage handleUrgentRequest(Message message) {
+    public SendMessage handleUrgentRequest(Long chatId) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setResizeKeyboard(true);
 
@@ -40,16 +40,16 @@ public class RequestHandler {
         replyKeyboardMarkup.setKeyboard(keyboardRowsList);
 
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId());
+        sendMessage.setChatId(chatId);
         sendMessage.setText("Пожалуйста нажмите на кнопку ниже что бы отправить запрос");
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
 
-        jedis.set(message.getChatId().toString(), "urgent");
+        jedis.set(chatId.toString(), "urgent");
 
         return sendMessage;
     }
 
-    public SendMessage handleRegularRequest(Message message) {
+    public SendMessage handleRegularRequest(Long chatId) {
 
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setResizeKeyboard(true);
@@ -66,12 +66,11 @@ public class RequestHandler {
         replyKeyboardMarkup.setKeyboard(keyboardRowsList);
 
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId());
+        sendMessage.setChatId(chatId);
         sendMessage.setText("Пожалуйста нажмите на кнопку ниже что бы отправить запрос");
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
 
-        jedis.set(message.getChatId().toString(), "regular");
-
+        jedis.set(chatId.toString(), "regular");
         return sendMessage;
     }
 }

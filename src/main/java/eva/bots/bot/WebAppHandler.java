@@ -3,19 +3,15 @@ package eva.bots.bot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eva.bots.dto.WebAppDataDTO;
-import eva.bots.entity.RegularRequest;
-import eva.bots.entity.UrgentRequest;
+import eva.bots.entity.Request;
 import eva.bots.exception.TelegramRuntimeException;
-import eva.bots.service.RegularRequestService;
-import eva.bots.service.UrgentRequestService;
+import eva.bots.service.RequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import redis.clients.jedis.Jedis;
 
 import java.time.LocalDateTime;
@@ -25,10 +21,12 @@ import java.time.LocalDateTime;
 @Slf4j
 public class WebAppHandler {
 
-    private final Long adminChatId = 225773842L; // FIXME
+//    private final Long adminChatId = 225773842L; // FIXME
+//    902213751
+    private final Long adminChatId = 902213751L; // FIXME
+
     private final ApplicationEventPublisher eventPublisher;
-    private final UrgentRequestService urgentRequestService;
-    private final RegularRequestService regularRequestService;
+    private final RequestService requestService;
     private final Jedis jedis;
 
     public SendMessage handleWebApp(Message message) {
@@ -51,16 +49,17 @@ public class WebAppHandler {
             response.setChatId(message.getChatId().toString());
 
             if ("urgent".equals(requestType)) {
-                UrgentRequest urgentRequest = UrgentRequest.builder()
+                Request urgentRequest = Request.builder()
                         .tgChatId(userChatId)
                         .userName(userName)
                         .userPronouns(userPronouns)
                         .requestDate(LocalDateTime.now())
                         .requestText(userRequest)
+                        .isUrgent(true)
                         .build();
 
                 log.info("request is: " + urgentRequest);
-                urgentRequestService.save(urgentRequest);
+                requestService.save(urgentRequest);
 
                 response.setText("Срочная заявка принята в обработку");
 
@@ -72,14 +71,16 @@ public class WebAppHandler {
 
 
             } else if ("regular".equals(requestType)) {
-                RegularRequest regularRequest = RegularRequest.builder()
+                Request regularRequest = Request.builder()
                         .tgChatId(userChatId)
                         .userName(userName)
+                        .userPronouns(userPronouns)
                         .requestDate(LocalDateTime.now())
                         .requestText(userRequest)
+                        .isUrgent(false) // fixme: can be a problem
                         .build();
 
-                regularRequestService.save(regularRequest);
+                requestService.save(regularRequest);
 
                 response.setText("Заявка принята в обработку");
             }

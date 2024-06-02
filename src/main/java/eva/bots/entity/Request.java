@@ -1,6 +1,12 @@
 package eva.bots.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,12 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Builder
@@ -23,8 +23,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "urgent_requests", schema = "cms_entity")
-public class UrgentRequest {
+@Table(name = "requests", schema = "cms_entity")
+public class Request {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +46,15 @@ public class UrgentRequest {
     @Column(name = "request_text")
     private String requestText;
 
-    @Column(name = "is_solved")
-    private boolean isSolved;
+    @Column(name = "is_urgent")
+    private boolean isUrgent;
+
+    @Column(name = "related_to")
+    private Long relatedAdminId;
+
+    @Column(name = "in_work")
+    private boolean inWork;
+
+    @Column(name = "in_the_archive")
+    private boolean inTheArchive;
 }

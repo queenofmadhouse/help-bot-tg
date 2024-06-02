@@ -24,6 +24,6 @@ spring:
 app:
   constants:
     bot:
-      bot-name: BBSGAY_Bbot
+      bot-name: Help-Bot
       bot-token: 6396446829:AAGj_ciyqp6gvL-c83hb51moFSAwRAgP-w0
-      web-url: https://a229-62-73-123-196.ngrok-free.app
+      web-url: https://37bd-62-73-123-196.ngrok-free.app
