@@ -4,15 +4,13 @@ CREATE SCHEMA IF NOT EXISTS cms_entity;
 CREATE TABLE IF NOT EXISTS cms_entity.users (
                                                     "user_id" BIGSERIAL PRIMARY KEY,
                                                     "first_name" VARCHAR(255) NOT NULL,
-                                                    "last_name" VARCHAR(255) NOT NULL,
-                                                    "email" VARCHAR(255) UNIQUE NOT NULL,
-                                                    "password" VARCHAR(255) NOT NULL
+                                                    "last_name" VARCHAR(255) NOT NULL
 );
 
 -- Admin Table (Inherits from User)
 CREATE TABLE IF NOT EXISTS cms_entity.admins (
                                                      "user_id" BIGINT PRIMARY KEY REFERENCES cms_entity.users("user_id"),
-                                                     "telegram_user_id" VARCHAR(255) UNIQUE NOT NULL
+                                                     "telegram_user_id" BIGINT UNIQUE NOT NULL
 );
 
 -- Regular Requests Table
