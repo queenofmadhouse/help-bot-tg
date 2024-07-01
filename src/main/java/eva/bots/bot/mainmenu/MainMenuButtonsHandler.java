@@ -1,5 +1,6 @@
 package eva.bots.bot.mainmenu;
 
+import eva.bots.dto.TelegramMessageDTO;
 import eva.bots.entity.Message;
 import eva.bots.entity.Request;
 import eva.bots.service.MessageService;
@@ -45,32 +46,35 @@ public class MainMenuButtonsHandler {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> inlineKeyboardRows = new ArrayList<>();
 
-        // Requests in process button
-        List<InlineKeyboardButton> historyOfRequestsRow = new ArrayList<>();
-        InlineKeyboardButton historyOfRequestsBtn = new InlineKeyboardButton();
-        historyOfRequestsBtn.setText("Мои запросы");
-        historyOfRequestsBtn.setCallbackData(HISTORY_OF_REQUESTS);
-        historyOfRequestsRow.add(historyOfRequestsBtn);
-        inlineKeyboardRows.add(historyOfRequestsRow);
-
-        // Urgent requests button
-        List<InlineKeyboardButton> urgentRequestRow = new ArrayList<>();
-        InlineKeyboardButton urgentRequestBtn = new InlineKeyboardButton();
-        urgentRequestBtn.setText("Срочный запрос");
-        urgentRequestBtn.setCallbackData(URGENT_REQUEST_USER);
-        urgentRequestRow.add(urgentRequestBtn);
-        inlineKeyboardRows.add(urgentRequestRow);
+        // Requests in process button if user have one or more requests
+        if (!requestService.findAllByRelatedUserId(message.getChatId()).isEmpty()) {
+            List<InlineKeyboardButton> historyOfRequestsRow = new ArrayList<>();
+            InlineKeyboardButton historyOfRequestsBtn = new InlineKeyboardButton();
+            historyOfRequestsBtn.setText("Мои запросы");
+            historyOfRequestsBtn.setCallbackData(HISTORY_OF_REQUESTS);
+            historyOfRequestsRow.add(historyOfRequestsBtn);
+            inlineKeyboardRows.add(historyOfRequestsRow);
+        }
 
         // Regular requests button
         List<InlineKeyboardButton> regularRequestRow = new ArrayList<>();
         InlineKeyboardButton regularRequestBtn = new InlineKeyboardButton();
-        regularRequestBtn.setText("Обычные запросы");
+        regularRequestBtn.setText("Информационная консультация");
         regularRequestBtn.setCallbackData(REGULAR_REQUESTS_USER);
         regularRequestRow.add(regularRequestBtn);
         inlineKeyboardRows.add(regularRequestRow);
 
+        // Urgent requests button
+        List<InlineKeyboardButton> urgentRequestRow = new ArrayList<>();
+        InlineKeyboardButton urgentRequestBtn = new InlineKeyboardButton();
+        urgentRequestBtn.setText("Экстренный запрос \uD83C\uDD98");
+        urgentRequestBtn.setCallbackData(URGENT_REQUEST_USER);
+        urgentRequestRow.add(urgentRequestBtn);
+        inlineKeyboardRows.add(urgentRequestRow);
+
         inlineKeyboardMarkup.setKeyboard(inlineKeyboardRows);
         sendMessage.setReplyMarkup(inlineKeyboardMarkup);
+        sendMessage.enableMarkdown(true);
         return Collections.singletonList(sendMessage);
     }
 
@@ -101,10 +105,6 @@ public class MainMenuButtonsHandler {
             InlineKeyboardButton textMessageButton = new InlineKeyboardButton("Открыть");
             textMessageButton.setCallbackData(OPEN + request.getId());
             row.add(textMessageButton);
-
-//            InlineKeyboardButton archiveRequestButton = new InlineKeyboardButton("Отменить");
-//            archiveRequestButton.setCallbackData(ARCHIVE + request.getId());
-//            row.add(archiveRequestButton);
 
             keyboardRows.add(row);
 
@@ -140,7 +140,7 @@ public class MainMenuButtonsHandler {
 
         jedis.set(chatId.toString() + ":state", "usr_waiting_for_message");
         jedis.set(chatId.toString() + ":requestId", requestId.toString());
-        System.out.println("handleSendMessage");
+
         return Collections.singletonList(sendMessage);
     }
 
@@ -206,7 +206,6 @@ public class MainMenuButtonsHandler {
 
     public List<SendMessage> sendPrivateMessage(Long requestId, String text) {
         Request request = requestService.findById(requestId);
-        System.out.println("sendPrivateMessage");
 
         Message message = Message.builder()
                 .request(request)
@@ -234,9 +233,10 @@ public class MainMenuButtonsHandler {
         event.setChatId(request.getRelatedAdminId());
         event.setText("Пришло новое сообщение по " + requestType + " запросу" + "\n" +
                 "ID запроса: " + request.getId());
-        eventPublisher.publishEvent(event);
-
-        System.out.println(provideRequestsInProcess(request.getRelatedAdminId()).getLast());
+        eventPublisher.publishEvent(TelegramMessageDTO.builder()
+                .sendMessage(event)
+                .build());
+        System.out.println("return message: " + returnMessage);
         return returnMessage;
     }
 }

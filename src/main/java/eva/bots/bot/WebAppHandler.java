@@ -8,6 +8,7 @@ import eva.bots.exception.TelegramRuntimeException;
 import eva.bots.service.RequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -21,9 +22,8 @@ import java.time.LocalDateTime;
 @Slf4j
 public class WebAppHandler {
 
-//    private final Long adminChatId = 225773842L; // FIXME
-//    902213751
-    private final Long adminChatId = 902213751L; // FIXME
+    @Value("${app.constants.bot.bot-admin-id}")
+    private Long adminChatId;
 
     private final ApplicationEventPublisher eventPublisher;
     private final RequestService requestService;
@@ -34,6 +34,7 @@ public class WebAppHandler {
         String webAppData = message.getWebAppData().getData();
 
         try {
+            System.out.println("we are in handleWebApp");
             ObjectMapper objectMapper = new ObjectMapper();
             WebAppDataDTO data = objectMapper.readValue(webAppData, WebAppDataDTO.class);
 
@@ -61,30 +62,31 @@ public class WebAppHandler {
                 log.info("request is: " + urgentRequest);
                 requestService.save(urgentRequest);
 
-                response.setText("Срочная заявка принята в обработку");
+                response.setText("Спасибо, что обратились ко мне! Я свяжусь с вами как можно быстрее.");
 
                 SendMessage event = new SendMessage();
                 event.setChatId(adminChatId);
                 event.setText("Пришла новая срочная заявка!");
 
+                log.info("Publishing urgent request event: {}", event);
                 eventPublisher.publishEvent(event);
-
-
             } else if ("regular".equals(requestType)) {
+                System.out.println("we are in regular request");
                 Request regularRequest = Request.builder()
                         .tgChatId(userChatId)
                         .userName(userName)
                         .userPronouns(userPronouns)
                         .requestDate(LocalDateTime.now())
                         .requestText(userRequest)
-                        .isUrgent(false) // fixme: can be a problem
+                        .isUrgent(false)
                         .build();
 
                 requestService.save(regularRequest);
 
-                response.setText("Заявка принята в обработку");
+                response.setText("Спасибо, что обратились ко мне! Я отвечу вам в течение 24 часов, в будние дни.");
             }
 
+            System.out.println("response is: " + response);
             return (response);
         } catch (JsonProcessingException e) {
 

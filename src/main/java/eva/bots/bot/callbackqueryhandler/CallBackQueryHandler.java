@@ -25,11 +25,14 @@ public class CallBackQueryHandler {
     public List<SendMessage> handleCallBackQuery(Update update) {
 
         String data = update.getCallbackQuery().getData();
+        System.out.println("Data is: " + data);
 
         if (data.startsWith(ADM)) {
+            System.out.println("CallBackQuery from admin");
             return adminPanelProvider.provideAdminPanel(update);
         }
         if (data.startsWith(USR)) {
+            System.out.println("CallBackQuery from user");
             return mainMenuHandler.handleMainMenu(update);
         }
 

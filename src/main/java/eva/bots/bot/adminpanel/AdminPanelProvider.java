@@ -19,8 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminPanelProvider {
-
-    private final Long adminChatId = 225773842L; // FIXME
     private final String URGENT_REQUEST = "adm_urgent_request";
     private final String REGULAR_REQUESTS = "adm_regular_requests";
     private final String REQUESTS_IN_PROCESS = "adm_requests_in_process";
