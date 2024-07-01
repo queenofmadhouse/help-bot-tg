@@ -25,5 +25,5 @@ app:
     bot:
       bot-name: Help-Bot
       bot-token: 6396446829:AAGj_ciyqp6gvL-c83hb51moFSAwRAgP-w0
-      bot-admin-id: 225773842
+#      bot-admin-id: 225773842
       web-url: https://1ed6-62-73-123-196.ngrok-free.app

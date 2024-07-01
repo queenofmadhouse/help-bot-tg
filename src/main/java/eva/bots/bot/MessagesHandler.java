@@ -8,10 +8,9 @@ import eva.bots.bot.mainmenu.MainMenuHandler;
 import eva.bots.bot.starthandler.StartHandler;
 import eva.bots.dto.TelegramMessageDTO;
 import eva.bots.exception.TelegramRuntimeException;
+import eva.bots.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -19,24 +18,20 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import redis.clients.jedis.Jedis;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class MessagesHandler {
 
-    @Value("${app.constants.bot.bot-admin-id}")
-    private Long adminChatId;
-    private final ApplicationEventPublisher eventPublisher;
     private final MainMenuHandler mainMenuHandler;
     private final StartHandler startHandler;
-    private final RequestHandler requestHandler;
     private final WebAppHandler webAppHandler;
     private final AdminPanelProvider adminPanelProvider;
     private final CallBackQueryHandler callBackQueryHandler;
     private final AdminButtonsHandler adminButtonsHandler;
     private final MainMenuButtonsHandler mainMenuButtonsHandler;
+    private final AdminService adminService;
     private final Jedis jedis;
 
     public List<TelegramMessageDTO> handleMessages(Update update) {
@@ -59,7 +54,7 @@ public class MessagesHandler {
         if (update.hasMessage()
                 && update.getMessage().getText() != null
                 && update.getMessage().getText().equals("/admin")
-                && update.getMessage().getChatId().equals(adminChatId)) {
+                && adminService.existByTelegramUserId(update.getMessage().getChatId())) {
 
             List<SendMessage> sendMessages = adminPanelProvider.provideAdminPanel(update);
 
@@ -81,9 +76,7 @@ public class MessagesHandler {
                 && update.getMessage().getText() != null
                 && update.getMessage().getText().equals("/menu")) {
 
-            List<SendMessage> sendMessages = mainMenuHandler.handleMainMenu(update);
-
-            return sendMessages.stream().map(
+            return mainMenuHandler.handleMainMenu(update).stream().map(
                     sendMessage -> TelegramMessageDTO.builder()
                             .sendMessage(sendMessage)
                             .build()
@@ -93,17 +86,17 @@ public class MessagesHandler {
         Message message = update.getMessage();
 
         if (update.hasMessage() && message.getWebAppData() != null) {
+
             return webAppHandler.handleWebApp(message).stream()
                     .map(sendMessage -> TelegramMessageDTO.builder()
                             .sendMessage(sendMessage)
                             .build())
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         if (jedis.get(message.getChatId().toString() + ":state") != null &&
                 jedis.get(message.getChatId().toString() + ":state").equals("adm_waiting_for_message")) {
 
-            System.out.println("message from admin detected");
             List<SendMessage> sendMessages = adminButtonsHandler.sendPrivateMessage(
                     Long.parseLong(jedis.get(message.getChatId().toString() + ":requestId")),
                     message.getText());
@@ -120,13 +113,9 @@ public class MessagesHandler {
         if (jedis.get(message.getChatId().toString() + ":state") != null &&
                 jedis.get(message.getChatId().toString() + ":state").equals("usr_waiting_for_message")) {
 
-            System.out.println("message from user detected");
-
             List<SendMessage> sendMessages = mainMenuButtonsHandler.sendPrivateMessage(
                     Long.parseLong(jedis.get(message.getChatId().toString() + ":requestId")),
                     message.getText());
-
-            System.out.println(sendMessages);
 
             jedis.del(message.getChatId().toString() + ":state", message.getChatId().toString() + ":requestId");
 
@@ -136,6 +125,7 @@ public class MessagesHandler {
                             .build()
             ).toList();
         }
+
         throw new TelegramRuntimeException("Can't handle message");
     }
 }
