@@ -1,7 +1,7 @@
 package eva.bots.bot;
 
-import eva.bots.bot.adminpanel.AdminPanelProvider;
 import eva.bots.bot.adminpanel.AdminButtonsHandler;
+import eva.bots.bot.adminpanel.AdminPanelProvider;
 import eva.bots.bot.callbackqueryhandler.CallBackQueryHandler;
 import eva.bots.bot.mainmenu.MainMenuButtonsHandler;
 import eva.bots.bot.mainmenu.MainMenuHandler;
@@ -18,8 +18,6 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import redis.clients.jedis.Jedis;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,10 +93,11 @@ public class MessagesHandler {
         Message message = update.getMessage();
 
         if (update.hasMessage() && message.getWebAppData() != null) {
-
-            return Collections.singletonList(TelegramMessageDTO.builder()
-                    .sendMessage(webAppHandler.handleWebApp(message))
-                    .build());
+            return webAppHandler.handleWebApp(message).stream()
+                    .map(sendMessage -> TelegramMessageDTO.builder()
+                            .sendMessage(sendMessage)
+                            .build())
+                    .collect(Collectors.toList());
         }
 
         if (jedis.get(message.getChatId().toString() + ":state") != null &&
@@ -106,7 +105,7 @@ public class MessagesHandler {
 
             System.out.println("message from admin detected");
             List<SendMessage> sendMessages = adminButtonsHandler.sendPrivateMessage(
-                    Long.parseLong(jedis.get(message.getChatId().toString()+ ":requestId")),
+                    Long.parseLong(jedis.get(message.getChatId().toString() + ":requestId")),
                     message.getText());
 
             jedis.del(message.getChatId().toString() + ":state", message.getChatId().toString() + ":requestId");
@@ -124,7 +123,7 @@ public class MessagesHandler {
             System.out.println("message from user detected");
 
             List<SendMessage> sendMessages = mainMenuButtonsHandler.sendPrivateMessage(
-                    Long.parseLong(jedis.get(message.getChatId().toString()+ ":requestId")),
+                    Long.parseLong(jedis.get(message.getChatId().toString() + ":requestId")),
                     message.getText());
 
             System.out.println(sendMessages);
