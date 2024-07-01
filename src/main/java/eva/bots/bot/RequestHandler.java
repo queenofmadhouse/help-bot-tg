@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -25,32 +24,18 @@ public class RequestHandler {
     private final Jedis jedis;
 
     public SendMessage handleUrgentRequest(Long chatId) {
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        replyKeyboardMarkup.setResizeKeyboard(true);
-
-        KeyboardButton keyboardButton = new KeyboardButton("Отправить запрос");
-        keyboardButton.setWebApp(new WebAppInfo(url));
-
-        KeyboardRow keyboardRow = new KeyboardRow();
-        keyboardRow.add(keyboardButton);
-
-        List<KeyboardRow> keyboardRowsList = new ArrayList<>();
-        keyboardRowsList.add(keyboardRow);
-
-        replyKeyboardMarkup.setKeyboard(keyboardRowsList);
-
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText("Пожалуйста нажмите на кнопку ниже что бы отправить запрос");
-        sendMessage.setReplyMarkup(replyKeyboardMarkup);
 
         jedis.set(chatId.toString(), "urgent");
 
-        return sendMessage;
+        return createButton(chatId);
     }
 
     public SendMessage handleRegularRequest(Long chatId) {
 
+        jedis.set(chatId.toString(), "regular");
+        return createButton(chatId);
+    }
+    private SendMessage createButton(Long chatId) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setResizeKeyboard(true);
 
@@ -70,7 +55,6 @@ public class RequestHandler {
         sendMessage.setText("Пожалуйста нажмите на кнопку ниже что бы отправить запрос");
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
 
-        jedis.set(chatId.toString(), "regular");
         return sendMessage;
     }
 }
