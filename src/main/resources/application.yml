@@ -1,12 +1,16 @@
 server:
   port: 8080
 spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 60000
   flyway:
     locations: classpath:/db/migration
-#  jackson:
-#    serialization:
-#      write_dates_as_timestamps: false
-#    date-format: yyyy-MM-dd'T'HH:mm:ss
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+    date-format: yyyy-MM-dd'T'HH:mm:ss
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${POSTGRES_DB_URL}
@@ -15,16 +19,10 @@ spring:
     hikari:
       minimum-idle: 1
       maximum-pool-size: 5
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      timeout: 60000
 
 app:
   constants:
     bot:
       bot-name: Help-Bot
-      bot-token: 6396446829:AAGj_ciyqp6gvL-c83hb51moFSAwRAgP-w0
-      bot-admin-id: 225773842
-      web-url: https://1ed6-62-73-123-196.ngrok-free.app
+      bot-token: ${BOT_TOKEN}
+      web-url: ${URL}

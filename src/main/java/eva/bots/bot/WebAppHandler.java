@@ -5,35 +5,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eva.bots.dto.WebAppDataDTO;
 import eva.bots.entity.Request;
 import eva.bots.exception.TelegramRuntimeException;
+import eva.bots.service.AdminService;
 import eva.bots.service.RequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import redis.clients.jedis.Jedis;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class WebAppHandler {
 
-//    private final Long adminChatId = 225773842L; // FIXME
-//    902213751
-    private final Long adminChatId = 902213751L; // FIXME
-
-    private final ApplicationEventPublisher eventPublisher;
     private final RequestService requestService;
+    private final AdminService adminService;
     private final Jedis jedis;
 
-    public SendMessage handleWebApp(Message message) {
+    public List<SendMessage> handleWebApp(Message message) {
 
         String webAppData = message.getWebAppData().getData();
 
         try {
+            List<SendMessage> sendMessages = new ArrayList<>();
             ObjectMapper objectMapper = new ObjectMapper();
             WebAppDataDTO data = objectMapper.readValue(webAppData, WebAppDataDTO.class);
 
@@ -41,14 +41,13 @@ public class WebAppHandler {
             String userName = data.getUserName();
             String userPronouns = data.getUserPronouns();
             String userRequest = data.getUserRequest();
-
             String requestType = jedis.get(userChatId.toString());
 
-
-            SendMessage response = new SendMessage();
-            response.setChatId(message.getChatId().toString());
+            SendMessage messageToUser = new SendMessage();
+            messageToUser.setChatId(message.getChatId().toString());
 
             if ("urgent".equals(requestType)) {
+
                 Request urgentRequest = Request.builder()
                         .tgChatId(userChatId)
                         .userName(userName)
@@ -58,34 +57,30 @@ public class WebAppHandler {
                         .isUrgent(true)
                         .build();
 
-                log.info("request is: " + urgentRequest);
                 requestService.save(urgentRequest);
 
-                response.setText("Срочная заявка принята в обработку");
+                messageToUser.setText("Спасибо, что обратились ко мне! Я свяжусь с вами как можно быстрее.");
 
-                SendMessage event = new SendMessage();
-                event.setChatId(adminChatId);
-                event.setText("Пришла новая срочная заявка!");
-
-                eventPublisher.publishEvent(event);
-
-
+                sendMessages.addAll(prepareNotifications());
             } else if ("regular".equals(requestType)) {
+
                 Request regularRequest = Request.builder()
                         .tgChatId(userChatId)
                         .userName(userName)
                         .userPronouns(userPronouns)
                         .requestDate(LocalDateTime.now())
                         .requestText(userRequest)
-                        .isUrgent(false) // fixme: can be a problem
+                        .isUrgent(false)
                         .build();
 
                 requestService.save(regularRequest);
 
-                response.setText("Заявка принята в обработку");
+                messageToUser.setText("Спасибо, что обратились ко мне! Я отвечу вам в течение 24 часов, в будние дни.");
             }
 
-            return (response);
+            sendMessages.add(messageToUser);
+
+            return sendMessages;
         } catch (JsonProcessingException e) {
 
             log.error("Ошибка при десериализации JSON: {}", e.getMessage());
@@ -96,5 +91,15 @@ public class WebAppHandler {
 
             throw new TelegramRuntimeException("Ошибка при обработке WebApp");
         }
+    }
+
+    private List<SendMessage> prepareNotifications() {
+
+        return adminService.findAll().stream()
+                .map(admin -> SendMessage.builder()
+                        .chatId(admin.getTelegramUserId())
+                        .text("Пришла новая срочная заявка!")
+                        .build())
+                .collect(Collectors.toList());
     }
 }

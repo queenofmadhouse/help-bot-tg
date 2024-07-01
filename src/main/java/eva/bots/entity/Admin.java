@@ -19,5 +19,5 @@ import lombok.experimental.SuperBuilder;
 public class Admin extends User {
 
     @Column(name = "telegram_user_id")
-    protected String telegramUserId;
+    protected Long telegramUserId;
 }

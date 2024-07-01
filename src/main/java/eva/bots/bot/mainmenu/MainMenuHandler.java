@@ -28,7 +28,7 @@ public class MainMenuHandler {
     public List<SendMessage> handleMainMenu(Update update) {
 
         if (update.getMessage() != null &&
-                update.getMessage().getText().equals("/start")){
+                update.getMessage().getText().equals("/menu")){
             return mainMenuButtonsHandler.handleStartMessage(update.getMessage());
         }
 

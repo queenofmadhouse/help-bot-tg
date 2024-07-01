@@ -1,5 +1,6 @@
 package eva.bots.bot.adminpanel;
 
+import eva.bots.bot.mainmenu.MainMenuButtonsHandler;
 import eva.bots.entity.Message;
 import eva.bots.entity.Request;
 import eva.bots.service.MessageService;
@@ -36,6 +37,7 @@ public class AdminButtonsHandler {
     private final String BACK = "amd_back_";
     private final RequestService requestService;
     private final MessageService messageService;
+    private final MainMenuButtonsHandler mainMenuButtonsHandler;
     private final ApplicationEventPublisher eventPublisher;
     private final Jedis jedis;
 
@@ -296,7 +298,7 @@ public class AdminButtonsHandler {
 
         eventPublisher.publishEvent(event);
 
-        event = handleStartRequest(request.getTgChatId(), request.getId()).getLast();
+        event = mainMenuButtonsHandler.handleOpenRequest(request.getTgChatId(), request.getId()).getLast();
 
         eventPublisher.publishEvent(event);
         return returnMessage;

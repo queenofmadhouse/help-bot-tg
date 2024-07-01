@@ -34,10 +34,4 @@ public class User {
 
     @Column(name = "last_name")
     protected String lastName;
-
-    @Column(name = "email")
-    protected String email;
-
-    @Column(name = "password")
-    protected String password;
 }

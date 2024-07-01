@@ -1,17 +1,13 @@
 package eva.bots.bot.adminpanel;
 
 import eva.bots.exception.TelegramRuntimeException;
+import eva.bots.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,8 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminPanelProvider {
-
-    private final Long adminChatId = 225773842L; // FIXME
     private final String URGENT_REQUEST = "adm_urgent_request";
     private final String REGULAR_REQUESTS = "adm_regular_requests";
     private final String REQUESTS_IN_PROCESS = "adm_requests_in_process";
@@ -30,28 +24,36 @@ public class AdminPanelProvider {
     private final String ARCHIVE = "adm_archive_";
     private final String TEXTMESSAGE = "adm_textMessage_";
     private final String BACK = "amd_back_";
-    private final ApplicationEventPublisher eventPublisher;
     private final AdminButtonsHandler adminButtonsHandler;
+    private final AdminService adminService;
 
 
     public List<SendMessage> provideAdminPanel(Update update) {
 
-        authoriseUserAndProvideAdminPanel(update);
+        Long userId = update.hasCallbackQuery() ? update.getCallbackQuery().getFrom().getId() : update.getMessage().getChatId();
 
-        return authoriseUserAndProvideAdminPanel(update);
-    }
+        if(!authoriseUser(userId)) {
 
-    private List<SendMessage> authoriseUserAndProvideAdminPanel(Update update) {
-
-        if (update.hasCallbackQuery()) {
-            return handleButtons(update);
-        }
-
-        if (!update.hasCallbackQuery()) {
-            return adminButtonsHandler.provideAdminPanelButtons(update);
+            return Collections.singletonList(SendMessage.builder()
+                    .chatId(userId)
+                    .text("Вы не зарегистрированы в качестве администратора")
+                    .build());
+        } else {
+            if (update.hasCallbackQuery()) {
+                return handleButtons(update);
+            }
+            if (update.hasMessage()) {
+                return adminButtonsHandler.provideAdminPanelButtons(update);
+            }
         }
 
         throw new TelegramRuntimeException("Can't handle admin panel");
+
+    }
+
+    private boolean authoriseUser(Long id) {
+
+        return adminService.existByTelegramUserId(id);
     }
 
     private List<SendMessage> handleButtons(Update update) {
