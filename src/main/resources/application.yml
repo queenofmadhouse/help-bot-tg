@@ -1,24 +1,10 @@
-server:
-  port: 8080
 spring:
-  redis:
-    host: localhost
-    port: 6379
-    timeout: 60000
-  flyway:
-    locations: classpath:/db/migration
+  profiles:
+    active: prod
   jackson:
     serialization:
       write_dates_as_timestamps: false
     date-format: yyyy-MM-dd'T'HH:mm:ss
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${POSTGRES_DB_URL}
-    username: ${POSTGRES_DB_USERNAME}
-    password: ${POSTGRES_DB_PASSWORD}
-    hikari:
-      minimum-idle: 1
-      maximum-pool-size: 5
 
 app:
   constants:
