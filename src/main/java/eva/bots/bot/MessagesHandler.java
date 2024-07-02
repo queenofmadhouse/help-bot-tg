@@ -1,7 +1,7 @@
 package eva.bots.bot;
 
-import eva.bots.bot.adminpanel.AdminButtonsHandler;
-import eva.bots.bot.adminpanel.AdminPanelProvider;
+import eva.bots.bot.adminpanel.AdminPanelButtonsHandler;
+import eva.bots.bot.adminpanel.AdminPanelHandler;
 import eva.bots.bot.callbackqueryhandler.CallBackQueryHandler;
 import eva.bots.bot.mainmenu.MainMenuButtonsHandler;
 import eva.bots.bot.mainmenu.MainMenuHandler;
@@ -27,9 +27,9 @@ public class MessagesHandler {
     private final MainMenuHandler mainMenuHandler;
     private final StartHandler startHandler;
     private final WebAppHandler webAppHandler;
-    private final AdminPanelProvider adminPanelProvider;
+    private final AdminPanelHandler adminPanelHandler;
     private final CallBackQueryHandler callBackQueryHandler;
-    private final AdminButtonsHandler adminButtonsHandler;
+    private final AdminPanelButtonsHandler adminPanelButtonsHandler;
     private final MainMenuButtonsHandler mainMenuButtonsHandler;
     private final AdminService adminService;
     private final Jedis jedis;
@@ -56,7 +56,7 @@ public class MessagesHandler {
                 && update.getMessage().getText().equals("/admin")
                 && adminService.existByTelegramUserId(update.getMessage().getChatId())) {
 
-            List<SendMessage> sendMessages = adminPanelProvider.provideAdminPanel(update);
+            List<SendMessage> sendMessages = adminPanelHandler.provideAdminPanel(update);
 
             return sendMessages.stream().map(
                     sendMessage -> TelegramMessageDTO.builder()
@@ -97,7 +97,7 @@ public class MessagesHandler {
         if (jedis.get(message.getChatId().toString() + ":state") != null &&
                 jedis.get(message.getChatId().toString() + ":state").equals("adm_waiting_for_message")) {
 
-            List<SendMessage> sendMessages = adminButtonsHandler.sendPrivateMessage(
+            List<SendMessage> sendMessages = adminPanelButtonsHandler.sendPrivateMessage(
                     Long.parseLong(jedis.get(message.getChatId().toString() + ":requestId")),
                     message.getText());
 

@@ -236,7 +236,7 @@ public class MainMenuButtonsHandler {
         eventPublisher.publishEvent(TelegramMessageDTO.builder()
                 .sendMessage(event)
                 .build());
-        System.out.println("return message: " + returnMessage);
+
         return returnMessage;
     }
 }

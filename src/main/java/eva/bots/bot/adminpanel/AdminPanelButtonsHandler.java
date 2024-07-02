@@ -24,7 +24,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AdminButtonsHandler {
+public class AdminPanelButtonsHandler {
 
     private final String URGENT_REQUEST = "adm_urgent_request";
     private final String REGULAR_REQUESTS = "adm_regular_requests";

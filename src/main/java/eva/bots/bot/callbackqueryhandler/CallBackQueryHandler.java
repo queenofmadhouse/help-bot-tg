@@ -1,6 +1,6 @@
 package eva.bots.bot.callbackqueryhandler;
 
-import eva.bots.bot.adminpanel.AdminPanelProvider;
+import eva.bots.bot.adminpanel.AdminPanelHandler;
 import eva.bots.bot.mainmenu.MainMenuHandler;
 import eva.bots.exception.TelegramRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +19,19 @@ public class CallBackQueryHandler {
     private final String ADM = "adm_";
     private final String USR = "usr_";
 
-    private final AdminPanelProvider adminPanelProvider;
+    private final AdminPanelHandler adminPanelHandler;
     private final MainMenuHandler mainMenuHandler;
 
     public List<SendMessage> handleCallBackQuery(Update update) {
 
         String data = update.getCallbackQuery().getData();
-        System.out.println("Data is: " + data);
 
         if (data.startsWith(ADM)) {
-            System.out.println("CallBackQuery from admin");
-            return adminPanelProvider.provideAdminPanel(update);
+
+            return adminPanelHandler.provideAdminPanel(update);
         }
         if (data.startsWith(USR)) {
-            System.out.println("CallBackQuery from user");
+            
             return mainMenuHandler.handleMainMenu(update);
         }
 

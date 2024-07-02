@@ -13,8 +13,6 @@ public class HomePageController {
 
     @GetMapping("/")
     public String getHomePage() {
-        log.info("Trying to get home page");
-        System.out.println("Trying to get home page");
 
         return "index";
     }

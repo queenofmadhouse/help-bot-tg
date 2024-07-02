@@ -1,6 +1,7 @@
 package eva.bots.service;
 
 import eva.bots.entity.Request;
+import eva.bots.exception.DatabaseRuntimeException;
 import eva.bots.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,7 @@ public class RequestService {
 
     public Request findById(Long id) {
         return requestRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("exp"));
-    }
-
-    public void deleteById(Long id) {
-        requestRepository.deleteById(id);
+                new DatabaseRuntimeException("Can't find request by id: " + id));
     }
 
     public List<Request> findAllUrgent() {
