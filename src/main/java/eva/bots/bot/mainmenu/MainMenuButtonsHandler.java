@@ -154,7 +154,7 @@ public class MainMenuButtonsHandler {
 
         List<InlineKeyboardButton> row = new ArrayList<>();
 
-        if (!request.isInTheArchive()) {
+        if (!request.isInTheArchive() && request.getRelatedAdminId() != null) {
             InlineKeyboardButton acceptButton = new InlineKeyboardButton("Написать");
             acceptButton.setCallbackData(TEXTMESSAGE + request.getId());
             row.add(acceptButton);
