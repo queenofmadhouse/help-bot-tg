@@ -26,7 +26,7 @@ public class MessagesHandler {
 
     private final MainMenuHandler mainMenuHandler;
     private final StartHandler startHandler;
-    private final WebAppHandler webAppHandler;
+    private final RequestHandler requestHandler;
     private final AdminPanelHandler adminPanelHandler;
     private final CallBackQueryHandler callBackQueryHandler;
     private final AdminPanelButtonsHandler adminPanelButtonsHandler;
@@ -85,15 +85,6 @@ public class MessagesHandler {
 
         Message message = update.getMessage();
 
-        if (update.hasMessage() && message.getWebAppData() != null) {
-
-            return webAppHandler.handleWebApp(message).stream()
-                    .map(sendMessage -> TelegramMessageDTO.builder()
-                            .sendMessage(sendMessage)
-                            .build())
-                    .toList();
-        }
-
         if (jedis.get(message.getChatId().toString() + ":state") != null &&
                 jedis.get(message.getChatId().toString() + ":state").equals("adm_waiting_for_message")) {
 
@@ -118,6 +109,45 @@ public class MessagesHandler {
                     message.getText());
 
             jedis.del(message.getChatId().toString() + ":state", message.getChatId().toString() + ":requestId");
+
+            return sendMessages.stream().map(
+                    sendMessage -> TelegramMessageDTO.builder()
+                            .sendMessage(sendMessage)
+                            .build()
+            ).toList();
+        }
+
+        if (jedis.get(message.getChatId().toString() + ":state_waiting_for_user_name") != null) {
+
+            List<SendMessage> sendMessages = requestHandler.handleInputName(update);
+
+            jedis.del(message.getChatId().toString() + ":state_waiting_for_user_name");
+
+            return sendMessages.stream().map(
+                    sendMessage -> TelegramMessageDTO.builder()
+                            .sendMessage(sendMessage)
+                            .build()
+            ).toList();
+        }
+
+        if (jedis.get(message.getChatId().toString() + ":state_waiting_for_user_pronouns") != null) {
+
+            List<SendMessage> sendMessages = requestHandler.handleInputPronouns(update);
+
+            jedis.del(message.getChatId().toString() + ":state_waiting_for_user_pronouns");
+
+            return sendMessages.stream().map(
+                    sendMessage -> TelegramMessageDTO.builder()
+                            .sendMessage(sendMessage)
+                            .build()
+            ).toList();
+        }
+
+        if (jedis.get(message.getChatId().toString() + ":state_waiting_for_user_request") != null) {
+
+            List<SendMessage> sendMessages = requestHandler.handleInputRequest(update);
+
+            jedis.del(message.getChatId().toString() + ":state_waiting_for_user_request");
 
             return sendMessages.stream().map(
                     sendMessage -> TelegramMessageDTO.builder()
