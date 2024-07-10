@@ -52,6 +52,7 @@ public class MainMenuHandler {
             Long requestId = Long.parseLong(data.substring(TEXTMESSAGE.length()));
             return mainMenuButtonsHandler.handleSendMessage(chatId, requestId);
         }
+
         throw new TelegramRuntimeException("Can't handle mein menu");
     }
 }
