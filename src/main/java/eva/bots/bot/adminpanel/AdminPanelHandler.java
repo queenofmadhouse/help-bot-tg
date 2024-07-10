@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AdminPanelProvider {
+public class AdminPanelHandler {
     private final String URGENT_REQUEST = "adm_urgent_request";
     private final String REGULAR_REQUESTS = "adm_regular_requests";
     private final String REQUESTS_IN_PROCESS = "adm_requests_in_process";
@@ -24,7 +24,7 @@ public class AdminPanelProvider {
     private final String ARCHIVE = "adm_archive_";
     private final String TEXTMESSAGE = "adm_textMessage_";
     private final String BACK = "amd_back_";
-    private final AdminButtonsHandler adminButtonsHandler;
+    private final AdminPanelButtonsHandler adminPanelButtonsHandler;
     private final AdminService adminService;
 
 
@@ -43,7 +43,7 @@ public class AdminPanelProvider {
                 return handleButtons(update);
             }
             if (update.hasMessage()) {
-                return adminButtonsHandler.provideAdminPanelButtons(update);
+                return adminPanelButtonsHandler.provideAdminPanelButtons(update);
             }
         }
 
@@ -63,38 +63,38 @@ public class AdminPanelProvider {
 
         if (data.equals(URGENT_REQUEST)) {
 
-            return adminButtonsHandler.provideRequests(chatId, true);
+            return adminPanelButtonsHandler.provideRequests(chatId, true);
         }
 
         if (data.equals(REGULAR_REQUESTS)) {
-            return adminButtonsHandler.provideRequests(chatId, false);
+            return adminPanelButtonsHandler.provideRequests(chatId, false);
         }
 
         if (data.equals(REQUESTS_IN_PROCESS)) {
-            return adminButtonsHandler.provideRequestsInProcess(chatId);
+            return adminPanelButtonsHandler.provideRequestsInProcess(chatId);
         }
 
         if (data.startsWith(ACCEPT)) {
             Long requestId = Long.parseLong(data.substring(ACCEPT.length()));
-            return adminButtonsHandler.handleAcceptRequest(chatId, requestId);
+            return adminPanelButtonsHandler.handleAcceptRequest(chatId, requestId);
         } else if (data.startsWith(REJECT)) {
             Long requestId = Long.parseLong(data.substring(REJECT.length()));
-            return adminButtonsHandler.handleRejectRequest(chatId, requestId);
+            return adminPanelButtonsHandler.handleRejectRequest(chatId, requestId);
         }
 
         if (data.startsWith(START)) {
             Long requestId = Long.parseLong(data.substring(START.length()));
-            return adminButtonsHandler.handleStartRequest(chatId, requestId);
+            return adminPanelButtonsHandler.handleStartRequest(chatId, requestId);
         } else if (data.startsWith(ARCHIVE)) {
             Long requestId = Long.parseLong(data.substring(ARCHIVE.length()));
-            return adminButtonsHandler.handleRejectRequest(chatId, requestId);
+            return adminPanelButtonsHandler.handleRejectRequest(chatId, requestId);
         }
 
         if (data.startsWith(TEXTMESSAGE)) {
             Long requestId = Long.parseLong(data.substring(TEXTMESSAGE.length()));
-            return adminButtonsHandler.handleSendMessage(chatId, requestId);
+            return adminPanelButtonsHandler.handleSendMessage(chatId, requestId);
         } else if (data.startsWith(BACK)) {
-            return adminButtonsHandler.provideRequestsInProcess(chatId);
+            return adminPanelButtonsHandler.provideRequestsInProcess(chatId);
         }
 
         throw new TelegramRuntimeException("Bad CallBackQuery, can't handle buttons");

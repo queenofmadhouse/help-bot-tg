@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 @Getter
 @Setter
 public class TelegramMessageDTO {
+
     private SendMessage sendMessage;
     private SendSticker sendSticker;
 }

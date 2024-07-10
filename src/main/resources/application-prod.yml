@@ -1,0 +1,23 @@
+server:
+  port: 8080
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 60000
+  flyway:
+    locations: classpath:/db/migration
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${POSTGRES_DB_URL}
+    username: ${POSTGRES_DB_USERNAME}
+    password: ${POSTGRES_DB_PASSWORD}
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+
+app:
+  constants:
+    bot:
+      bot-name: Help-Bot
+      bot-token: ${BOT_TOKEN}
