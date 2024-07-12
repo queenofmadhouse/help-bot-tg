@@ -168,26 +168,26 @@ public class MainMenuButtonsHandler {
 
         inlineKeyboardMarkup.setKeyboard(keyboardRows);
 
-        String title = "*Запрос:*\n";
+        String title = "<b>Запрос:</b>" + "\n";
 
         if (request.isUrgent()) {
-            title = "*Срочный запрос:*\n";
+            title = "<b>Срочный запрос:</b>\n";
         }
 
         String requestText = title +
-                "**id: " + request.getId() + "\n" +
-                "**Имя:** " + request.getUserName() + "\n" +
-                "**Местоимения:** " + request.getUserPronouns() + "\n" +
-                "**Запрос:** " + request.getRequestText() + "\n\n";
+                "<b>id: </b>" + request.getId() + "\n" +
+                "<b>Имя: </b>" + request.getUserName() + "\n" +
+                "<b>Местоимения: </b>" + request.getUserPronouns() + "\n" +
+                "<b>Запрос: </b>" + request.getRequestText() + "\n\n";
 
         if (!messagesRelatedToRequest.isEmpty()) {
-            requestText += "**История сообщений:**" + "\n";
+            requestText += "<b><u>История сообщений</u></b>" + "\n";
             for (eva.bots.entity.Message message : messagesRelatedToRequest) {
 
                 if (message.isFromAdmin()) {
-                    requestText += "**Консультант:** ";
+                    requestText += "<b>— Консультант:</b> ";
                 } else {
-                    requestText += "**Пользователь:** ";
+                    requestText += "<b>— Пользователь:</b> ";
                 }
 
                 requestText += message.getMessageText() + "\n";
@@ -199,7 +199,8 @@ public class MainMenuButtonsHandler {
         sendMessage.setText(requestText);
 
         sendMessage.setReplyMarkup(inlineKeyboardMarkup);
-        sendMessage.setParseMode(ParseMode.MARKDOWN);
+        sendMessage.enableMarkdown(true);
+        sendMessage.enableHtml(true);
 
         return Collections.singletonList(sendMessage);
     }
@@ -216,10 +217,10 @@ public class MainMenuButtonsHandler {
                 .build();
         messageService.save(message);
 
-        List<SendMessage> returnMessage = Arrays.asList(
-                new SendMessage(request.getTgChatId().toString(), "Cообщение отправлено "),
-                provideRequestsInProcess(request.getTgChatId()).getLast()
-        );
+        List<SendMessage> returnMessage = new ArrayList<>();
+
+        returnMessage.add(new SendMessage(request.getTgChatId().toString(), "Сообщение отправлено "));
+        returnMessage.addAll(provideRequestsInProcess(request.getTgChatId()));
 
         String requestType;
 
