@@ -66,7 +66,9 @@ public class RequestHandler {
         String type = jedis.get(message.getChatId().toString() + ":state_waiting_for_user_pronouns");
 
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setText("Отлично, теперь напишите пожалуйста ваш запрос:");
+        sendMessage.setText("Отлично, теперь напишите, пожалуйста, ваш запрос в одном сообщении. " +
+                "Ко мне придет только одно первое ваше сообщение, поэтому внимательно проверьте ваш запрос пред отправкой" + "\n" +
+                "Ваш запрос:");
         sendMessage.setChatId(chatId);
 
         jedis.set(chatId.toString() + ":user_pronouns", userPronouns);
@@ -90,7 +92,7 @@ public class RequestHandler {
         sendMessage.setChatId(chatId);
 
         if (type.equals("urgent")) {
-            sendMessage.setText("Спасибо, что обратились ко мне! Я свяжусь с вами как можно быстрее.");
+            sendMessage.setText("Получил ваш запрос. Спасибо, что обратились ко мне! Я свяжусь с вами как можно быстрее.");
             sendMessages.addAll(prepareNotifications());
 
             Request urgentRequest = Request.builder()
@@ -104,7 +106,7 @@ public class RequestHandler {
 
             requestService.save(urgentRequest);
         } else {
-            sendMessage.setText("Спасибо, что обратились ко мне! Я отвечу вам в течение 24 часов, в будние дни.");
+            sendMessage.setText("Получил ваш запрос. Спасибо, что обратились ко мне! Я отвечу вам в течение 24 часов, в будние дни.");
 
             Request regularRequest = Request.builder()
                     .tgChatId(chatId)
