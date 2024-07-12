@@ -204,9 +204,9 @@ public class AdminPanelButtonsHandler {
             for (Message message : messagesRelatedToRequest) {
 
                 if (message.isFromAdmin()) {
-                    requestText += "**Консультант:** ";
+                    requestText += "**— Консультант:** ";
                 } else {
-                    requestText += "**Пользователь:** ";
+                    requestText += "**— Пользователь:** ";
                 }
 
                 requestText += message.getMessageText() + "\n";
@@ -257,22 +257,26 @@ public class AdminPanelButtonsHandler {
 
     public List<SendMessage> handleRejectRequest(Long chatId, Long requestId) {
 
+        List<SendMessage> sendMessages = new ArrayList<>();
+
         Request request = requestService.findById(requestId);
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setText("Запрос успешно удален в архив");
+        sendMessage.setText("Запрос успешно закрыт");
 
         request.setInTheArchive(true);
         requestService.save(request);
 
         SendMessage notification = new SendMessage();
         notification.setChatId(request.getTgChatId());
-        notification.setText("Ваш запрос отклонен");
+        notification.setText("Ваш запрос был закрыт");
 
-        eventPublisher.publishEvent(notification);
+        sendMessages.add(sendMessage);
+        sendMessages.add(notification);
+        sendMessages.addAll(mainMenuButtonsHandler.handleOpenRequest(request.getTgChatId(), request.getId()));
 
-        return Collections.singletonList(sendMessage);
+        return sendMessages;
     }
 
     public List<SendMessage> sendPrivateMessage(Long requestId, String text) {
