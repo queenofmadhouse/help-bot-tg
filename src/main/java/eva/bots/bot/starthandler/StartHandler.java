@@ -64,6 +64,7 @@ public class StartHandler {
         messageWithText.setChatId(message.getChatId());
         messageWithText.setText(text);
         messageWithText.enableMarkdown(true);
+        messageWithText.disableWebPagePreview();
         sticker.setChatId(message.getChatId());
         sticker.setSticker(stickerId);
 
