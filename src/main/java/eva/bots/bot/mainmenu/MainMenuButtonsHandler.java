@@ -168,10 +168,10 @@ public class MainMenuButtonsHandler {
 
         inlineKeyboardMarkup.setKeyboard(keyboardRows);
 
-        String title = "<b>Запрос:</b>" + "\n";
+        String title = "<b><u>Запрос:</u></b>" + "\n";
 
         if (request.isUrgent()) {
-            title = "<b>Срочный запрос:</b>\n";
+            title = "<b><u>Срочный запрос:</u></b>\n";
         }
 
         String requestText = title +
