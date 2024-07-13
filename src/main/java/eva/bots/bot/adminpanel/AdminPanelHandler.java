@@ -23,7 +23,7 @@ public class AdminPanelHandler {
     private final String START = "adm_start_";
     private final String ARCHIVE = "adm_archive_";
     private final String TEXTMESSAGE = "adm_textMessage_";
-    private final String BACK = "amd_back_";
+    private final String BACK = "adm_back_";
     private final AdminPanelButtonsHandler adminPanelButtonsHandler;
     private final AdminService adminService;
 
@@ -93,7 +93,8 @@ public class AdminPanelHandler {
         if (data.startsWith(TEXTMESSAGE)) {
             Long requestId = Long.parseLong(data.substring(TEXTMESSAGE.length()));
             return adminPanelButtonsHandler.handleSendMessage(chatId, requestId);
-        } else if (data.startsWith(BACK)) {
+        }
+        if (data.startsWith(BACK)) {
             return adminPanelButtonsHandler.provideRequestsInProcess(chatId);
         }
 

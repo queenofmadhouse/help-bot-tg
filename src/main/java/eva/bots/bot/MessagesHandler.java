@@ -105,8 +105,7 @@ public class MessagesHandler {
                 jedis.get(message.getChatId().toString() + ":state").equals("usr_waiting_for_message")) {
 
             List<SendMessage> sendMessages = mainMenuButtonsHandler.sendPrivateMessage(
-                    Long.parseLong(jedis.get(message.getChatId().toString() + ":requestId")),
-                    message.getText());
+                    Long.parseLong(jedis.get(message.getChatId().toString() + ":requestId")), message);
 
             jedis.del(message.getChatId().toString() + ":state", message.getChatId().toString() + ":requestId");
 

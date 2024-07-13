@@ -91,10 +91,13 @@ public class MainMenuButtonsHandler {
 
         List<SendMessage> messages = new ArrayList<>();
 
-        messages.add(SendMessage.builder()
+        SendMessage title = SendMessage.builder()
                 .chatId(chatId)
-                .text("Ваши запросы:")
-                .build());
+                .text("<b><u>Ваши запросы:</u></b>")
+                .build();
+
+        title.enableHtml(true);
+        messages.add(title);
 
         for (Request request : requests) {
             InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -110,22 +113,23 @@ public class MainMenuButtonsHandler {
 
             inlineKeyboardMarkup.setKeyboard(keyboardRows);
 
-            String title = "*Запрос:*\n";
+            String requestTitle = "<b>Запрос:</b>\n";
 
             if (request.isUrgent()) {
-                title = "*Срочный запрос:*\n";
+                requestTitle = "<b>Срочный запрос:</b>\n";
             }
 
-            String requestText = title +
-                    "**id запроса: " + request.getId() + "\n" +
-                    "**Запрос:** " + request.getRequestText() + "\n";
+            String requestText = requestTitle +
+                    "<b>id запроса:</b> " + request.getId() + "\n" +
+                    "<b>Запрос:</b> " + request.getRequestText() + "\n";
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText(requestText);
 
             sendMessage.setReplyMarkup(inlineKeyboardMarkup);
-            sendMessage.setParseMode(ParseMode.MARKDOWN);
+            sendMessage.enableMarkdown(true);
+            sendMessage.enableHtml(true);
 
             messages.add(sendMessage);
         }
@@ -205,22 +209,26 @@ public class MainMenuButtonsHandler {
         return Collections.singletonList(sendMessage);
     }
 
-    public List<SendMessage> sendPrivateMessage(Long requestId, String text) {
+    public List<SendMessage> sendPrivateMessage(Long requestId,
+                                                org.telegram.telegrambots.meta.api.objects.Message message) {
+
+        String text = message.getText();
+
         Request request = requestService.findById(requestId);
 
-        Message message = Message.builder()
+        Message privateMessage = Message.builder()
                 .request(request)
                 .userChatId(request.getTgChatId())
                 .adminChatId(request.getRelatedAdminId())
                 .fromAdmin(false)
                 .messageText(text)
                 .build();
-        messageService.save(message);
+        messageService.save(privateMessage);
 
         List<SendMessage> returnMessage = new ArrayList<>();
 
-        returnMessage.add(new SendMessage(request.getTgChatId().toString(), "Сообщение отправлено "));
-        returnMessage.addAll(provideRequestsInProcess(request.getTgChatId()));
+        returnMessage.add(new SendMessage(request.getTgChatId().toString(), "Сообщение отправлено"));
+        returnMessage.addAll(handleStartMessage(message));
 
         String requestType;
 
@@ -230,13 +238,12 @@ public class MainMenuButtonsHandler {
             requestType = "обычному";
         }
 
-        SendMessage event = new SendMessage();
-        event.setChatId(request.getRelatedAdminId());
-        event.setText("Пришло новое сообщение по " + requestType + " запросу" + "\n" +
+        SendMessage notification = new SendMessage();
+        notification.setChatId(request.getRelatedAdminId());
+        notification.setText("Пришло новое сообщение по " + requestType + " запросу" + "\n" +
                 "ID запроса: " + request.getId());
-        eventPublisher.publishEvent(TelegramMessageDTO.builder()
-                .sendMessage(event)
-                .build());
+
+        returnMessage.add(notification);
 
         return returnMessage;
     }

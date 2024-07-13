@@ -34,7 +34,7 @@ public class AdminPanelButtonsHandler {
     private final String START = "adm_start_";
     private final String ARCHIVE = "adm_archive_";
     private final String TEXTMESSAGE = "adm_textMessage_";
-    private final String BACK = "amd_back_";
+    private final String BACK = "adm_back_";
     private final RequestService requestService;
     private final MessageService messageService;
     private final MainMenuButtonsHandler mainMenuButtonsHandler;
@@ -63,10 +63,13 @@ public class AdminPanelButtonsHandler {
 
         List<SendMessage> messages = new ArrayList<>();
 
-        messages.add(SendMessage.builder()
+        SendMessage title = SendMessage.builder()
                 .chatId(chatId)
-                .text("Запросы:")
-                .build());
+                .text("<u><b>Запросы:</b></u>")
+                .build();
+        title.enableHtml(true);
+
+        messages.add(title);
 
         for (Request request : requests) {
             InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -117,10 +120,13 @@ public class AdminPanelButtonsHandler {
 
         List<SendMessage> messages = new ArrayList<>();
 
-        messages.add(SendMessage.builder()
+        SendMessage title = SendMessage.builder()
                 .chatId(chatId)
-                .text("Запросы:")
-                .build());
+                .text("<u><b>Запросы:</b></u>")
+                .build();
+        title.enableHtml(true);
+
+        messages.add(title);
 
         for (Request request : requests) {
             InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -140,13 +146,13 @@ public class AdminPanelButtonsHandler {
 
             inlineKeyboardMarkup.setKeyboard(keyboardRows);
 
-            String title = "*Запрос:*\n";
+            String requestTitle = "*Запрос:*\n";
 
             if (request.isUrgent()) {
-                title = "*Срочный запрос:*\n";
+                requestTitle = "*Срочный запрос:*\n";
             }
 
-            String requestText = title +
+            String requestText = requestTitle +
                     "**id: " + request.getId() + "\n" +
                     "**Имя:** " + request.getUserName() + "\n" +
                     "**Местоимения:** " + request.getUserPronouns() + "\n" +
@@ -292,7 +298,7 @@ public class AdminPanelButtonsHandler {
         messageService.save(message);
 
         List<SendMessage> returnMessage = Arrays.asList(
-                new SendMessage(request.getRelatedAdminId().toString(), "Cообщение отправлено "),
+                new SendMessage(request.getRelatedAdminId().toString(), "Сообщение отправлено "),
                 provideRequestsInProcess(request.getRelatedAdminId()).getLast()
         );
 
