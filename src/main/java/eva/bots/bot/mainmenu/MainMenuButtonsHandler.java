@@ -118,7 +118,7 @@ public class MainMenuButtonsHandler {
 
             String requestText = title +
                     "**id запроса: " + request.getId() + "\n" +
-                    "**Запрос:** " + request.getRequestText() + "\n";
+                    "**Запрос:** " + escapeMarkdown(request.getRequestText()) + "\n";
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
@@ -176,9 +176,9 @@ public class MainMenuButtonsHandler {
 
         String requestText = title +
                 "**id: " + request.getId() + "\n" +
-                "**Имя:** " + request.getUserName() + "\n" +
-                "**Местоимения:** " + request.getUserPronouns() + "\n" +
-                "**Запрос:** " + request.getRequestText() + "\n\n";
+                "**Имя:** " + escapeMarkdown(request.getUserName()) + "\n" +
+                "**Местоимения:** " + escapeMarkdown(request.getUserPronouns()) + "\n" +
+                "**Запрос:** " + escapeMarkdown(request.getRequestText()) + "\n\n";
 
         if (!messagesRelatedToRequest.isEmpty()) {
             requestText += "**История сообщений:**" + "\n";
@@ -190,7 +190,7 @@ public class MainMenuButtonsHandler {
                     requestText += "**Пользователь:** ";
                 }
 
-                requestText += message.getMessageText() + "\n";
+                requestText += escapeMarkdown(message.getMessageText()) + "\n";
             }
         }
 
@@ -239,4 +239,9 @@ public class MainMenuButtonsHandler {
 
         return returnMessage;
     }
+
+    private String escapeMarkdown(String text) {
+        return text.replaceAll("([*_\\[\\]()~`])", "\\\\$1");
+    }
+
 }

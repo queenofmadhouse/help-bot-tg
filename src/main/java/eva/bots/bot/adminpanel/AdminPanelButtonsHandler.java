@@ -91,9 +91,9 @@ public class AdminPanelButtonsHandler {
             sendMessage.setText(
                     "*Запрос:*\n" +
                             "**id: " + request.getId() + "\n" +
-                            "**Имя:** " + request.getUserName() + "\n" +
-                            "**Местоимения:** " + request.getUserPronouns() + "\n" +
-                            "**Запрос:** " + request.getRequestText() + "\n\n");
+                            "**Имя:** " + escapeMarkdown(request.getUserName()) + "\n" +
+                            "**Местоимения:** " + escapeMarkdown(request.getUserPronouns()) + "\n" +
+                            "**Запрос:** " + escapeMarkdown(request.getRequestText()) + "\n\n");
 
             sendMessage.setReplyMarkup(inlineKeyboardMarkup);
             sendMessage.setParseMode(ParseMode.MARKDOWN);
@@ -148,9 +148,9 @@ public class AdminPanelButtonsHandler {
 
             String requestText = title +
                     "**id: " + request.getId() + "\n" +
-                    "**Имя:** " + request.getUserName() + "\n" +
-                    "**Местоимения:** " + request.getUserPronouns() + "\n" +
-                    "**Запрос:** " + request.getRequestText() + "\n";
+                    "**Имя:** " + escapeMarkdown(request.getUserName()) + "\n" +
+                    "**Местоимения:** " + escapeMarkdown(request.getUserPronouns()) + "\n" +
+                    "**Запрос:** " + escapeMarkdown(request.getRequestText()) + "\n";
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
@@ -195,9 +195,9 @@ public class AdminPanelButtonsHandler {
 
         String requestText = title +
                 "**id: " + request.getId() + "\n" +
-                "**Имя:** " + request.getUserName() + "\n" +
-                "**Местоимения:** " + request.getUserPronouns() + "\n" +
-                "**Запрос:** " + request.getRequestText() + "\n\n";
+                "**Имя:** " + escapeMarkdown(request.getUserName()) + "\n" +
+                "**Местоимения:** " + escapeMarkdown(request.getUserPronouns()) + "\n" +
+                "**Запрос:** " + escapeMarkdown(request.getRequestText()) + "\n\n";
 
         if (!messagesRelatedToRequest.isEmpty()) {
             requestText += "**История сообщений:**" + "\n";
@@ -209,7 +209,7 @@ public class AdminPanelButtonsHandler {
                     requestText += "**Пользователь:** ";
                 }
 
-                requestText += message.getMessageText() + "\n";
+                requestText += escapeMarkdown(message.getMessageText()) + "\n";
             }
         }
 
@@ -341,5 +341,9 @@ public class AdminPanelButtonsHandler {
         inlineKeyboardMarkup.setKeyboard(inlineKeyboardRows);
         sendMessage.setReplyMarkup(inlineKeyboardMarkup);
         return Collections.singletonList(sendMessage);
+    }
+
+    private String escapeMarkdown(String text) {
+        return text.replaceAll("([*_\\[\\]()~`])", "\\\\$1");
     }
 }
