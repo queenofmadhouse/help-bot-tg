@@ -11,4 +11,3 @@ app:
     bot:
       bot-name: Help-Bot
       bot-token: ${BOT_TOKEN}
-      web-url: ${URL}
