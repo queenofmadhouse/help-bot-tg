@@ -42,4 +42,14 @@ public class MainController {
     public void sendMessage(@RequestBody Message message) {
         messageService.save(message);
     }
+
+    @RequestMapping("/api/request/accept/{requestId}")
+    public void acceptRequest(@PathVariable long requestId) {
+        requestService.acceptRequest(requestId, 225773842L);
+    }
+
+    @RequestMapping("/api/request/deny/{requestId}")
+    public void denyRequest(@PathVariable long requestId) {
+        requestService.denyRequest(requestId);
+    }
 }

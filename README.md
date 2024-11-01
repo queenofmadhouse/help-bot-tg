@@ -222,3 +222,11 @@ docker run -d --name bot-app --network bot-network -e "POSTGRES_DB_URL=" -e "POS
         "timestamp": null
 }
 ~~~
+#### Accept request (start work with it)
+1) URL: /api/request/accept/{id}
+2) Method: POST
+3) Parameters: id = request id
+#### Deny request
+1) URL: /api/request/deny/{id}
+2) Method: POST
+3) Parameters: id = request id
